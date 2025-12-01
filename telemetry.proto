@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package iha_telemetry;
+
+message FlightData {
+  double latitude = 1;
+  double longitude = 2;
+  float altitude = 3;
+  float speed = 4;
+  float heading = 5;
+  float battery = 6;
+  int64 timestamp = 7;
+}

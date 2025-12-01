@@ -1,62 +1,97 @@
 import time
+import math
 import serial
-import struct
-import random
-import telemetry_pb2  # Protobuf derlemesinden çıkan dosya
+import serial.tools.list_ports
+import telemetry_pb2  # Oluşturduğumuz proto dosyası
 
 # --- AYARLAR ---
-# Linux/Raspberry Pi için genelde: '/dev/ttyUSB0' veya '/dev/ttyS0'
-# Windows'ta test ediyorsan: 'COM4'
-XBEE_PORT = '/dev/ttyUSB0' 
-BAUD_RATE = 9600
+BAUD_RATE = 9600  # XBee modüllerindeki ayarın aynısı olmalı!
+
+def list_serial_ports():
+    """Bilgisayardaki aktif portları listeler."""
+    ports = serial.tools.list_ports.comports()
+    print("\n--- Bulunan Seri Portlar ---")
+    for port, desc, hwid in ports:
+        print(f"{port}: {desc}")
+    print("----------------------------\n")
+    return [p.device for p in ports]
 
 def main():
+    # 1. Port Seçimi
+    available_ports = list_serial_ports()
+    if not available_ports:
+        print("HATA: Hiçbir COM portu bulunamadı! XBee takılı mı?")
+        return
+
+    # Eğer sadece 1 port varsa otomatik seç, yoksa kullanıcıya sor
+    if len(available_ports) == 1:
+        selected_port = available_ports[0]
+    else:
+        selected_port = input(f"Kullanılacak Portu Yazın ({', '.join(available_ports)}): ").upper()
+
+    print(f"Bağlanılıyor: {selected_port} @ {BAUD_RATE}")
+
     try:
-        # XBee Seri Port Bağlantısını Başlat
-        ser = serial.Serial(
-            port=XBEE_PORT,
-            baudrate=BAUD_RATE,
-            timeout=1
-        )
-        print(f"XBee Baglantisi Baslatildi: {XBEE_PORT} @ {BAUD_RATE}")
-        
+        # 2. Bağlantıyı Başlat
+        ser = serial.Serial(selected_port, BAUD_RATE, timeout=1)
+        time.sleep(2) # Bağlantının oturması için kısa bekleme
+        print("XBee Bağlantısı Başarılı! Veri gönderimi başlıyor...\n")
+
+        # --- SİMÜLASYON DEĞİŞKENLERİ ---
+        # Başlangıç: İstanbul / Tarihi Yarımada
+        center_lat = 41.0082
+        center_lon = 28.9784
+        radius = 0.002 # Dairenin çapı
+        angle = 0.0
+        altitude = 10.0
+        battery = 16.8 # 4S Lipo dolu
+
         while True:
-            # 1. Veri Oluştur (Simülasyon)
-            # Gerçek senaryoda buraya sensör okuma fonksiyonlarını koyacaksın.
-            telemetry = telemetry_pb2.TelemetryData()
+            # 3. Veriyi Oluştur (Daire çizen İHA simülasyonu)
+            flight_data = telemetry_pb2.FlightData()
             
-            # Örnek İHA verileri (İstanbul üzerinde uçuyor gibi)
-            telemetry.latitude = 41.015137 + (random.uniform(-0.001, 0.001))
-            telemetry.longitude = 28.979530 + (random.uniform(-0.001, 0.001))
-            telemetry.altitude = 50.0 + random.uniform(-1, 1)
-            telemetry.speed = 15.0 + random.uniform(-0.5, 0.5)
-            telemetry.battery = 14.8 - (0.001) # Pil azalıyor simülasyonu
-            telemetry.heading = random.uniform(0, 360)
+            # Koordinat hesapla (Daire çizme)
+            flight_data.latitude = center_lat + (math.sin(angle) * radius)
+            flight_data.longitude = center_lon + (math.cos(angle) * radius)
             
-            # 2. Veriyi Serileştir (Byte dizisine çevir)
-            data_bytes = telemetry.SerializeToString()
+            # Diğer verileri simüle et
+            flight_data.altitude = altitude + (math.sin(angle*5) * 2) # Hafif dalgalanma
+            flight_data.speed = 12.5 # m/s
             
-            # 3. Paketleme (Framing) - ÖNEMLİ!
-            # Alıcı tarafın paketin nerede başlayıp bittiğini anlaması için
-            # verinin başına verinin uzunluğunu (2 byte) ekliyoruz.
-            # '>H' = Big-Endian Unsigned Short (2 byte tamsayı)
-            packet_size = len(data_bytes)
-            header = struct.pack('>H', packet_size)
+            # Heading (Yön) hesabı: Dairenin teğetine bakar
+            heading_deg = math.degrees(angle) % 360
+            flight_data.heading = heading_deg 
             
-            final_packet = header + data_bytes
+            flight_data.battery = battery
+            flight_data.timestamp = int(time.time() * 1000) # Milisaniye cinsinden zaman
+
+            # 4. Veriyi Serileştir (Serialize)
+            # Protobuf veriyi binary (byte dizisi) haline getirir
+            serialized_data = flight_data.SerializeToString()
+
+            # 5. Gönder
+            ser.write(serialized_data)
             
-            # 4. Veriyi Gönder
-            ser.write(final_packet)
-            
-            print(f"Gonderildi: {packet_size} byte veri + 2 byte baslik.")
-            
-            # Gönderim sıklığı (Hz)
-            time.sleep(0.1) # 10 Hz (Saniyede 10 veri)
+            # Bilgi yazdır
+            print(f"Gonderildi ({len(serialized_data)} byte) -> "
+                  f"Lat: {flight_data.latitude:.5f}, "
+                  f"Lon: {flight_data.longitude:.5f}, "
+                  f"Alt: {flight_data.altitude:.1f}m")
+
+            # Simülasyonu ilerlet
+            angle += 0.05
+            battery -= 0.001 # Pil azalıyor
+            if battery < 13.0: battery = 16.8 # Pil bitince fulle
+
+            # 6. Bekleme (Çok Önemli!)
+            # Transparent modda veri paketlerinin birbirine yapışmaması için
+            # en basit yöntem kısa bir süre beklemektir.
+            time.sleep(0.2) # Saniyede 5 veri (5 Hz)
 
     except serial.SerialException as e:
-        print(f"HATA: Seri port hatasi -> {e}")
+        print(f"SERİ PORT HATASI: {e}")
     except KeyboardInterrupt:
-        print("Program durduruluyor...")
+        print("\nProgram durduruldu.")
         if 'ser' in locals() and ser.is_open:
             ser.close()
 
