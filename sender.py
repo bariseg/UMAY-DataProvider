@@ -46,19 +46,34 @@ def main():
         center_lon = 28.9784
         radius = 0.002 # Dairenin çapı
         angle = 0.0
-        altitude = 10.0
+        altitude = 100.0
         battery = 16.8 # 4S Lipo dolu
 
         while True:
-            # 1. Veriyi Hazırla
+            # 1. Veriyi Hazırla (Tüm .proto alanları dolduruluyor)
             flight_data = telemetry_pb2.FlightData()
-            flight_data.latitude = center_lat + (math.sin(angle) * 0.002)
-            flight_data.longitude = center_lon + (math.cos(angle) * 0.002)
-            flight_data.altitude = 50.0 + (math.sin(angle*5) * 2)
-            flight_data.speed = 12.5
+            # Konum: merkez etrafında dairesel hareket
+            flight_data.latitude = center_lat + (math.sin(angle) * radius)
+            flight_data.longitude = center_lon + (math.cos(angle) * radius)
+            # Yükseklik: baz yükseklik + açının fonksiyonuna göre dalgalanma
+            flight_data.altitude = altitude + (math.sin(angle * 3.0) * 10.0)
+            # Hız: küçük osilasyonlarla simüle edilir
+            flight_data.speed = 12.5 + (math.sin(angle * 2.0) * 1.0)
+            # Yön (0-360)
             flight_data.heading = (math.degrees(angle) % 360)
-            flight_data.battery = 15.5
+
+            # Pil: yavaşça azalır, belli bir eşik altına düşünce yeniden doldurulur (simülasyon amaçlı)
+            battery -= 0.01
+            if battery < 12.0:
+                battery = 16.8
+            flight_data.battery = battery
+
+            # Zaman damgası (ms)
             flight_data.timestamp = int(time.time() * 1000)
+
+            # Roll ve pitch: açının fonksiyonuna göre örnek değerler (derece cinsinden)
+            flight_data.roll = math.sin(angle * 4.0) * 30.0   # +/-30 derece civarı
+            flight_data.pitch = math.cos(angle * 4.0) * 15.0  # +/-15 derece civarı
 
             # 2. Protobuf ile Serileştir
             serialized_data = flight_data.SerializeToString()
@@ -74,10 +89,15 @@ def main():
             # 4. Gönder
             ser.write(final_packet)
             
-            print(f"Gonderildi: {len(serialized_data)} byte veri + 4 byte başlık.")
+            print(
+                f"Gonderildi: {len(serialized_data)} byte veri + 4 byte başlık. "
+                f"lat={flight_data.latitude:.6f} lon={flight_data.longitude:.6f} alt={flight_data.altitude:.2f} "
+                f"spd={flight_data.speed:.2f} hdg={flight_data.heading:.1f} bat={flight_data.battery:.2f} "
+                f"roll={flight_data.roll:.1f} pitch={flight_data.pitch:.1f} ts={flight_data.timestamp}"
+            )
             
             angle += 0.05
-            time.sleep(1) # 10 Hz
+            time.sleep(0.6) # 10 Hz
 
     except serial.SerialException as e:
         print(f"SERİ PORT HATASI: {e}")

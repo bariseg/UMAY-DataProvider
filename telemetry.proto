@@ -10,4 +10,6 @@ message FlightData {
   float heading = 5;
   float battery = 6;
   int64 timestamp = 7;
+  float roll = 8;
+  float pitch = 9;
 }

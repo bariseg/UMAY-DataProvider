@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0ftelemetry.proto\x12\riha_telemetry\"\x87\x01\n\nFlightData\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x02\x12\r\n\x05speed\x18\x04 \x01(\x02\x12\x0f\n\x07heading\x18\x05 \x01(\x02\x12\x0f\n\x07\x62\x61ttery\x18\x06 \x01(\x02\x12\x11\n\ttimestamp\x18\x07 \x01(\x03\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0ftelemetry.proto\x12\riha_telemetry\"\xa4\x01\n\nFlightData\x12\x10\n\x08latitude\x18\x01 \x01(\x01\x12\x11\n\tlongitude\x18\x02 \x01(\x01\x12\x10\n\x08\x61ltitude\x18\x03 \x01(\x02\x12\r\n\x05speed\x18\x04 \x01(\x02\x12\x0f\n\x07heading\x18\x05 \x01(\x02\x12\x0f\n\x07\x62\x61ttery\x18\x06 \x01(\x02\x12\x11\n\ttimestamp\x18\x07 \x01(\x03\x12\x0c\n\x04roll\x18\x08 \x01(\x02\x12\r\n\x05pitch\x18\t \x01(\x02\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,5 +32,5 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'telemetry_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_FLIGHTDATA']._serialized_start=35
-  _globals['_FLIGHTDATA']._serialized_end=170
+  _globals['_FLIGHTDATA']._serialized_end=199
 # @@protoc_insertion_point(module_scope)

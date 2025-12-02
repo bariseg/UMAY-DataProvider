@@ -5,7 +5,7 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class FlightData(_message.Message):
-    __slots__ = ("latitude", "longitude", "altitude", "speed", "heading", "battery", "timestamp")
+    __slots__ = ("latitude", "longitude", "altitude", "speed", "heading", "battery", "timestamp", "roll", "pitch")
     LATITUDE_FIELD_NUMBER: _ClassVar[int]
     LONGITUDE_FIELD_NUMBER: _ClassVar[int]
     ALTITUDE_FIELD_NUMBER: _ClassVar[int]
@@ -13,6 +13,8 @@ class FlightData(_message.Message):
     HEADING_FIELD_NUMBER: _ClassVar[int]
     BATTERY_FIELD_NUMBER: _ClassVar[int]
     TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
+    ROLL_FIELD_NUMBER: _ClassVar[int]
+    PITCH_FIELD_NUMBER: _ClassVar[int]
     latitude: float
     longitude: float
     altitude: float
@@ -20,4 +22,6 @@ class FlightData(_message.Message):
     heading: float
     battery: float
     timestamp: int
-    def __init__(self, latitude: _Optional[float] = ..., longitude: _Optional[float] = ..., altitude: _Optional[float] = ..., speed: _Optional[float] = ..., heading: _Optional[float] = ..., battery: _Optional[float] = ..., timestamp: _Optional[int] = ...) -> None: ...
+    roll: float
+    pitch: float
+    def __init__(self, latitude: _Optional[float] = ..., longitude: _Optional[float] = ..., altitude: _Optional[float] = ..., speed: _Optional[float] = ..., heading: _Optional[float] = ..., battery: _Optional[float] = ..., timestamp: _Optional[int] = ..., roll: _Optional[float] = ..., pitch: _Optional[float] = ...) -> None: ...
