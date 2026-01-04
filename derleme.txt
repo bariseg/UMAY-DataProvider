@@ -1,1 +1,7 @@
 python -m grpc_tools.protoc -I . --python_out . --pyi_out . ./telemetry.proto
+raspberry:
+
+sudo nano /etc/systemd/system/kuzgun.service
+sudo systemctl status kuzgun.service
+sudo systemctl start kuzgun.service
+journalctl -u kuzgun.service -f
