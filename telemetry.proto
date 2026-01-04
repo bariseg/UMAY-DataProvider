@@ -2,14 +2,32 @@ syntax = "proto3";
 
 package iha_telemetry;
 
+message Target {
+  int32 id = 1;
+  float distance_horizontal = 2; // Yatay uzaklık
+}
+
 message FlightData {
-  double latitude = 1;
-  double longitude = 2;
+  double latitude = 1;  
+  double longitude = 2; 
   float altitude = 3;
-  float speed = 4;
+  float speed = 4;  
   float heading = 5;
   float battery = 6;
   int64 timestamp = 7;
   float roll = 8;
   float pitch = 9;
+  repeated Target targets = 10;
+  
+  // Additional flight data
+  float vertical_speed = 11;      // m/s (positive = climbing, negative = descending)
+  float current = 12;              // Amps - battery current draw
+  float voltage = 13;              // Volts - battery voltage
+  int32 gps_satellites = 14;       // Number of GPS satellites
+  float gps_hdop = 15;             // Horizontal Dilution of Precision
+  int32 gps_fix_type = 16;         // 0=No GPS, 1=No Fix, 2=2D Fix, 3=3D Fix
+  string flight_mode = 17;         // Flight mode (e.g., "MANUAL", "AUTO", "RTL")
+  float vibration_x = 18;          // m/s² - X axis vibration
+  float vibration_y = 19;          // m/s² - Y axis vibration
+  float vibration_z = 20;          // m/s² - Z axis vibration
 }
