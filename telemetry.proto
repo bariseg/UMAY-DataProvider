@@ -2,9 +2,16 @@ syntax = "proto3";
 
 package iha_telemetry;
 
+message TargetData {
+  float distanceHorizontalMax = 1;
+  float distanceVerticalMax = 2;
+  repeated Target targets = 3;
+}
+
 message Target {
   int32 id = 1;
-  float distance_horizontal = 2; // Yatay uzaklık
+  float distanceHorizontal = 2;
+  float distanceVertical = 3;
 }
 
 message FlightData {
@@ -17,9 +24,7 @@ message FlightData {
   int64 timestamp = 7;
   float roll = 8;
   float pitch = 9;
-  repeated Target targets = 10;
-  
-  // Additional flight data
+  TargetData targetData = 10;
   float vertical_speed = 11;      // m/s (positive = climbing, negative = descending)
   float current = 12;              // Amps - battery current draw
   float voltage = 13;              // Volts - battery voltage

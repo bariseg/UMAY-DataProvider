@@ -77,6 +77,21 @@ def generate_simulation_data(state_cache, elapsed_time):
     modes = ["LOITER", "AUTO", "GUIDED"]
     mode_index = int(elapsed_time / 20) % len(modes)
     state_cache['flight_mode'] = modes[mode_index]
+    
+    # Generate target data (1-2 targets)
+    num_targets = random.choice([1, 2])
+    state_cache['target_distance_h_max'] = 1500.0
+    state_cache['target_distance_v_max'] = 300.0
+    
+    targets = []
+    for i in range(num_targets):
+        target = {
+            'id': i + 1,
+            'distance_h': random.uniform(100, state_cache['target_distance_h_max']),
+            'distance_v': random.uniform(-50, state_cache['target_distance_v_max'])
+        }
+        targets.append(target)
+    state_cache['targets'] = targets
 
 def connect_pixhawk(port):
     print(f"Pixhawk aranıyor: {port}...")
@@ -136,7 +151,9 @@ def main():
         'climb': 0.0,
         'satellites': 0, 'hdop': 99.9, 'fix_type': 0,
         'flight_mode': 'MANUAL',
-        'vib_x': 0.0, 'vib_y': 0.0, 'vib_z': 0.0
+        'vib_x': 0.0, 'vib_y': 0.0, 'vib_z': 0.0,
+        'target_distance_h_max': 0.0, 'target_distance_v_max': 0.0,
+        'targets': []
     }
 
     mav_master = None
@@ -226,6 +243,16 @@ def main():
                 flight_data.vibration_x = current_data['vib_x']
                 flight_data.vibration_y = current_data['vib_y']
                 flight_data.vibration_z = current_data['vib_z']
+                
+                # Add target data
+                if current_data['targets']:
+                    flight_data.targetData.distanceHorizontalMax = current_data['target_distance_h_max']
+                    flight_data.targetData.distanceVerticalMax = current_data['target_distance_v_max']
+                    for target in current_data['targets']:
+                        t = flight_data.targetData.targets.add()
+                        t.id = target['id']
+                        t.distanceHorizontal = target['distance_h']
+                        t.distanceVertical = target['distance_v']
 
                 serialized_data = flight_data.SerializeToString()
                 length_prefix = struct.pack('>I', len(serialized_data))

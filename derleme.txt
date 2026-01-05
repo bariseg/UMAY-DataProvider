@@ -1,7 +1,11 @@
 python -m grpc_tools.protoc -I . --python_out . --pyi_out . ./telemetry.proto
-raspberry:
 
+python3 -m venv venv
+source venv/bin/activate
+
+raspberry:
 sudo nano /etc/systemd/system/kuzgun.service
 sudo systemctl status kuzgun.service
 sudo systemctl start kuzgun.service
+sudo systemctl stop kuzgun.service
 journalctl -u kuzgun.service -f
