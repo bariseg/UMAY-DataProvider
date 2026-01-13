@@ -9,7 +9,7 @@ import platform # İşletim sistemini anlamak için
 from pymavlink import mavutil
 
 # --- AYARLAR ---
-SIMULATION_MODE = False  
+SIMULATION_MODE = True  
 XBEE_BAUD_RATE = 9600
 PIXHAWK_BAUD_RATE = 57600
 
