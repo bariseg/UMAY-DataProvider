@@ -203,7 +203,7 @@ def main():
                     # Uçuş modunu heartbeat'ten otomatik alıyoruz
                     current_data['flight_mode'] = get_flight_mode(mav_master)
 
-            if now - last_send_time > 0.5:
+            if now - last_send_time > 0.1:
                 flight_data = telemetry_pb2.FlightData()
                 
                 # Temel Veriler

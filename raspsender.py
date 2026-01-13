@@ -9,7 +9,7 @@ import platform # İşletim sistemini anlamak için
 from pymavlink import mavutil
 
 # --- AYARLAR ---
-SIMULATION_MODE = True  
+SIMULATION_MODE = False  
 XBEE_BAUD_RATE = 9600
 PIXHAWK_BAUD_RATE = 57600
 
@@ -79,16 +79,16 @@ def generate_simulation_data(state_cache, elapsed_time):
     state_cache['flight_mode'] = modes[mode_index]
     
     # Generate target data (1-2 targets)
-    num_targets = random.choice([1, 2])
-    state_cache['target_distance_h_max'] = 1500.0
-    state_cache['target_distance_v_max'] = 300.0
+    num_targets = 1 #random.choice([1, 2])
+    state_cache['target_distance_h_max'] = 100.0
+    state_cache['target_distance_v_max'] = 100.0
     
     targets = []
     for i in range(num_targets):
         target = {
             'id': i + 1,
-            'distance_h': random.uniform(100, state_cache['target_distance_h_max']),
-            'distance_v': random.uniform(-50, state_cache['target_distance_v_max'])
+            'distance_h': random.uniform(-state_cache['target_distance_h_max'], state_cache['target_distance_h_max']),
+            'distance_v': random.uniform(0, state_cache['target_distance_v_max'])
         }
         targets.append(target)
     state_cache['targets'] = targets
